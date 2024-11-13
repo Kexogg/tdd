@@ -1,8 +1,6 @@
-using SkiaSharp;
-using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
-namespace TagsCloudVisualization.Render;
+namespace TagsCloudVisualization.Renderer;
 
 [TestFixture]
 public class RendererTests
@@ -23,18 +21,21 @@ public class RendererTests
     }
 
     [TestCase(0, 200)]
-    [TestCase(-1, 200)]
+    [TestCase(-1, 50)]
     public void CreateRectangles_ShouldThrowException_WhenRectanglesAreOutOfBounds(int topLeft, int bottomRight)
     {
-        Assert.Throws<ArgumentException>(() => render.CreateRectangles([new SKRect(topLeft, topLeft, bottomRight, bottomRight)]));
+        Assert.Throws<ArgumentException>(() =>
+            render.CreateRectangles([new SKRect(topLeft, topLeft, bottomRight, bottomRight)]));
     }
 
-    [TestCase(0,0,0,0)]
-    [TestCase(50,50,0,0)]
-    [TestCase(50,0,50,0)]
-    public void CreateRectangles_ShouldThrowException_WhenRectanglesAreInvalid(int topLeft, int topRight, int bottomLeft, int bottomRight)
+    [TestCase(0, 0, 0, 0)]
+    [TestCase(50, 50, 0, 0)]
+    [TestCase(50, 0, 50, 0)]
+    public void CreateRectangles_ShouldThrowException_WhenRectanglesAreInvalid(int topLeft, int topRight,
+        int bottomLeft, int bottomRight)
     {
-        Assert.Throws<ArgumentException>(() => render.CreateRectangles([new SKRect(topLeft, topRight, bottomLeft, bottomRight)]));
+        Assert.Throws<ArgumentException>(() =>
+            render.CreateRectangles([new SKRect(topLeft, topRight, bottomLeft, bottomRight)]));
     }
 
     [TearDown]
@@ -42,11 +43,12 @@ public class RendererTests
     {
         if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
         {
-            var filename = "tests_" + TestContext.CurrentContext.Test.Name + ".png";
+            var filename = "tests_renderer_" + TestContext.CurrentContext.Test.ID + ".png";
             render.CreateImage(filename);
             var path = Path.Combine(Directory.GetCurrentDirectory(), filename);
             Console.WriteLine($"Attempted to save result to file {path}");
-        };
+        }
+
         if (File.Exists("image.png"))
             File.Delete("image.png");
     }
