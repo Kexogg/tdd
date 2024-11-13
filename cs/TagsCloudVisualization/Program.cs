@@ -2,9 +2,9 @@
 using TagsCloudVisualization.Layouter;
 using TagsCloudVisualization.Renderer;
 
-class Program
+internal class Program
 {
-    static void Main()
+    private static void Main()
     {
         if (!Directory.Exists("results"))
             Directory.CreateDirectory("results");

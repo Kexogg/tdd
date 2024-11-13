@@ -1,17 +1,35 @@
 using NUnit.Framework.Interfaces;
+using TagsCloudVisualization.Renderer;
 
-namespace TagsCloudVisualization.Renderer;
+namespace TagsCloudVisualizationTests;
 
 [TestFixture]
 public class RendererTests
 {
-    private Renderer render;
-
     [SetUp]
     public void SetUp()
     {
         render = new Renderer(new SKSize(100, 100));
     }
+
+    [TearDown]
+    public void TearDown()
+    {
+        if (TestContext.CurrentContext.Result.Outcome.Status != TestStatus.Failed) return;
+
+        if (!Directory.Exists("tests"))
+            Directory.CreateDirectory("tests");
+        var filename = "tests/renderer_" + TestContext.CurrentContext.Test.ID + ".png";
+        render.CreateImage(filename);
+        var path = Path.Combine(Directory.GetCurrentDirectory(), filename);
+        Console.WriteLine($"Attempted to save result to file {path}");
+
+
+        if (File.Exists("image.png"))
+            File.Delete("image.png");
+    }
+
+    private Renderer render;
 
     [Test]
     public void CreateImage_ShouldCreateImage()
@@ -36,20 +54,5 @@ public class RendererTests
     {
         Assert.Throws<ArgumentException>(() =>
             render.CreateRectangles([new SKRect(topLeft, topRight, bottomLeft, bottomRight)]));
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
-        {
-            var filename = "tests_renderer_" + TestContext.CurrentContext.Test.ID + ".png";
-            render.CreateImage(filename);
-            var path = Path.Combine(Directory.GetCurrentDirectory(), filename);
-            Console.WriteLine($"Attempted to save result to file {path}");
-        }
-
-        if (File.Exists("image.png"))
-            File.Delete("image.png");
     }
 }

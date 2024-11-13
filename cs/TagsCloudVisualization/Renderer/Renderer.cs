@@ -6,6 +6,7 @@ public class Renderer : IRenderer
 {
     private readonly SKBitmap bitmap;
     private readonly SKPaint paint;
+
     public Renderer(SKSize size)
     {
         bitmap = new SKBitmap((int)size.Width, (int)size.Height);
@@ -20,17 +21,20 @@ public class Renderer : IRenderer
             canvas.Clear(SKColors.LightGray);
         }
     }
+
     public void CreateRectangles(SKRect[] rectangles)
     {
         using var canvas = new SKCanvas(bitmap);
         foreach (var rectangle in rectangles)
         {
-            if (rectangle.Left < 0 || rectangle.Top < 0 || rectangle.Right > bitmap.Width || rectangle.Bottom > bitmap.Height)
+            if (rectangle.Left < 0 || rectangle.Top < 0 || rectangle.Right > bitmap.Width ||
+                rectangle.Bottom > bitmap.Height)
                 throw new ArgumentException("Rectangle is out of bounds");
             if (rectangle.Left >= rectangle.Right || rectangle.Top >= rectangle.Bottom)
                 throw new ArgumentException("Rectangle is invalid");
             canvas.DrawRect(rectangle, paint);
-            paint.Color = new SKColor((byte)(paint.Color.Red + 21), (byte)(paint.Color.Green + 43), (byte)(paint.Color.Blue + 67));
+            paint.Color = new SKColor((byte)(paint.Color.Red + 21), (byte)(paint.Color.Green + 43),
+                (byte)(paint.Color.Blue + 67));
         }
     }
 

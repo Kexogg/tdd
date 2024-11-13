@@ -1,6 +1,6 @@
 using TagsCloudVisualization.PositionGenerator;
 
-namespace TagsCloudVizualizationTests;
+namespace TagsCloudVisualizationTests;
 
 [TestFixture]
 public class SpiralLayoutPositionGeneratorTests
@@ -24,10 +24,7 @@ public class SpiralLayoutPositionGeneratorTests
         var center = new SKPoint(0, 0);
         var generator = new SpiralLayoutPositionGenerator(center, 0.1);
 
-        for (var i = 0; i < iterations; i++)
-        {
-            generator.GetNextPosition();
-        }
+        for (var i = 0; i < iterations; i++) generator.GetNextPosition();
 
         var position = generator.GetNextPosition();
         position.Should().Be(new SKPoint(x, y));

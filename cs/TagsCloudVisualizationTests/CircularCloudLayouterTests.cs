@@ -1,7 +1,8 @@
 using NUnit.Framework.Interfaces;
 using TagsCloudVisualization.Layouter;
+using TagsCloudVisualization.Renderer;
 
-namespace TagsCloudVizualizationTests;
+namespace TagsCloudVisualizationTests;
 
 [TestFixture]
 public class CircularCloudLayouterTests
@@ -20,7 +21,7 @@ public class CircularCloudLayouterTests
         if (!Directory.Exists("tests"))
             Directory.CreateDirectory("tests");
         var filename = "tests/layouter_" + TestContext.CurrentContext.Test.ID + ".png";
-        var renderer = new TagsCloudVisualization.Renderer.Renderer(new SKSize(1000, 1000));
+        var renderer = new Renderer(new SKSize(1000, 1000));
         renderer.CreateRectangles(layouter.GetRectangles());
         renderer.CreateImage(filename);
 
@@ -33,7 +34,7 @@ public class CircularCloudLayouterTests
     [Test]
     public void Constructor_ShouldCreateLayouter()
     {
-        AssertionExtensions.Should((object)layouter).NotBeNull();
+        layouter.Should().NotBeNull();
     }
 
     [Test]
@@ -47,10 +48,7 @@ public class CircularCloudLayouterTests
     public void PutNextRectangle_ShouldReturnRectangles()
     {
         var rectangles = new List<SKRect>();
-        for (var i = 0; i < 10; i++)
-        {
-            rectangles.Add(layouter.PutNextRectangle(new SKSize(10, 10)));
-        }
+        for (var i = 0; i < 10; i++) rectangles.Add(layouter.PutNextRectangle(new SKSize(10, 10)));
 
         rectangles.Should().HaveCount(10);
     }
@@ -59,18 +57,11 @@ public class CircularCloudLayouterTests
     public void PutNextRectangle_ShouldNotIntersectRectangles()
     {
         var rectangles = new List<SKRect>();
-        for (var i = 0; i < 10; i++)
-        {
-            rectangles.Add(layouter.PutNextRectangle(new SKSize(10, 10)));
-        }
+        for (var i = 0; i < 10; i++) rectangles.Add(layouter.PutNextRectangle(new SKSize(10, 10)));
 
         for (var i = 0; i < rectangles.Count; i++)
-        {
-            for (var j = i + 1; j < rectangles.Count; j++)
-            {
-                rectangles[i].IntersectsWith(rectangles[j]).Should().BeFalse();
-            }
-        }
+        for (var j = i + 1; j < rectangles.Count; j++)
+            rectangles[i].IntersectsWith(rectangles[j]).Should().BeFalse();
     }
 
     [Test]

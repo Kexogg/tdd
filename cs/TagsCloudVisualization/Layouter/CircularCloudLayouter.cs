@@ -5,8 +5,8 @@ namespace TagsCloudVisualization.Layouter;
 
 public class CircularCloudLayouter : ICircularCloudLayouter
 {
-    private readonly List<SKRect> rectangles;
     private readonly IPositionGenerator positionGenerator;
+    private readonly List<SKRect> rectangles;
 
     public CircularCloudLayouter(SKPoint center)
     {
@@ -37,5 +37,8 @@ public class CircularCloudLayouter : ICircularCloudLayouter
         return rectangle;
     }
 
-    public SKRect[] GetRectangles() => rectangles.ToArray();
+    public SKRect[] GetRectangles()
+    {
+        return rectangles.ToArray();
+    }
 }
