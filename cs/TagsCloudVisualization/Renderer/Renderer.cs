@@ -1,6 +1,6 @@
 using SkiaSharp;
 
-namespace TagsCloudVisualization.Render;
+namespace TagsCloudVisualization.Renderer;
 
 public class Renderer : IRenderer
 {
@@ -12,8 +12,13 @@ public class Renderer : IRenderer
         paint = new SKPaint
         {
             Color = SKColors.Black,
-            IsStroke = true
+            IsStroke = true,
+            TextSize = 24
         };
+        using var canvas = new SKCanvas(bitmap);
+        {
+            canvas.Clear(SKColors.LightGray);
+        }
     }
     public void CreateRectangles(SKRect[] rectangles)
     {
@@ -25,6 +30,7 @@ public class Renderer : IRenderer
             if (rectangle.Left >= rectangle.Right || rectangle.Top >= rectangle.Bottom)
                 throw new ArgumentException("Rectangle is invalid");
             canvas.DrawRect(rectangle, paint);
+            paint.Color = new SKColor((byte)(paint.Color.Red + 21), (byte)(paint.Color.Green + 43), (byte)(paint.Color.Blue + 67));
         }
     }
 

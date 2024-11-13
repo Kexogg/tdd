@@ -1,6 +1,6 @@
 using SkiaSharp;
 
-namespace TagsCloudVisualization.Render;
+namespace TagsCloudVisualization.Renderer;
 
 public interface IRenderer
 {
