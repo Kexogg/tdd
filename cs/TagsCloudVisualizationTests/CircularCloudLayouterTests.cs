@@ -1,5 +1,6 @@
 using NUnit.Framework.Interfaces;
 using TagsCloudVisualization.Layouter;
+using TagsCloudVisualization.PositionGenerator;
 using TagsCloudVisualization.Renderer;
 
 namespace TagsCloudVisualizationTests;
@@ -7,10 +8,15 @@ namespace TagsCloudVisualizationTests;
 [TestFixture]
 public class CircularCloudLayouterTests
 {
+    private CircularCloudLayouter layouter;
+    private static readonly SKPoint Center = new(500, 500);
+    private static readonly float Density = 0.7f;
+
     [SetUp]
     public void SetUp()
     {
-        layouter = new CircularCloudLayouter(new SKPoint(500, 500));
+        var positionGenerator = new SpiralLayoutPositionGenerator(Center);
+        layouter = new CircularCloudLayouter(positionGenerator);
     }
 
     [TearDown]
@@ -18,23 +24,36 @@ public class CircularCloudLayouterTests
     {
         if (TestContext.CurrentContext.Result.Outcome.Status != TestStatus.Failed) return;
 
-        if (!Directory.Exists("tests"))
-            Directory.CreateDirectory("tests");
-        var filename = "tests/layouter_" + TestContext.CurrentContext.Test.ID + ".png";
-        var renderer = new Renderer(new SKSize(1000, 1000));
-        renderer.CreateRectangles(layouter.GetRectangles());
-        renderer.CreateImage(filename);
-
+        
+        if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
+        {
+            var filename = "tests/layouter_" + TestContext.CurrentContext.Test.ID + ".png";
+            SaveImage(filename);
+        }
+    }
+    
+    private void SaveImage(string filename)
+    {
+        var renderer = new Renderer(new SKSize(Center.X * 2, Center.Y * 2));
+        renderer.DrawRectangles(layouter.GetRectangles());
+        var imageData = renderer.GetEncodedImage();
+        Directory.CreateDirectory("tests");
         var path = Path.Combine(Directory.GetCurrentDirectory(), filename);
+        using var stream = new FileStream(path, FileMode.Create);
+        imageData.SaveTo(stream);
         Console.WriteLine($"Tag cloud visualization saved to file {path}");
     }
 
-    private CircularCloudLayouter layouter;
-
-    [Test]
-    public void Constructor_ShouldCreateLayouter()
+    private SKSize[] GetRandomSizes(int count)
     {
-        layouter.Should().NotBeNull();
+        var random = new Random();
+        var sizes = new SKSize[count];
+        for (var i = 0; i < count; i++)
+        {
+            var size = new SKSize(random.Next(10, 100), random.Next(10, 100));
+            sizes[i] = size;
+        }
+        return sizes;
     }
 
     [Test]
@@ -45,12 +64,11 @@ public class CircularCloudLayouterTests
     }
 
     [Test]
-    public void PutNextRectangle_ShouldReturnRectangles()
+    public void PutNextRectangle_ShouldReturnRectangle()
     {
-        var rectangles = new List<SKRect>();
-        for (var i = 0; i < 10; i++) rectangles.Add(layouter.PutNextRectangle(new SKSize(10, 10)));
+        var rectangle = layouter.PutNextRectangle(new SKSize(100, 100));
 
-        rectangles.Should().HaveCount(10);
+        rectangle.Should().BeEquivalentTo(new SKRect(Center.X - 50, Center.Y - 50, Center.X + 50, Center.Y + 50));
     }
 
     [Test]
@@ -59,7 +77,7 @@ public class CircularCloudLayouterTests
         var rectangles = new List<SKRect>();
         for (var i = 0; i < 10; i++) rectangles.Add(layouter.PutNextRectangle(new SKSize(10, 10)));
 
-        for (var i = 0; i < rectangles.Count; i++)
+        for (var i = 0; i < rectangles.Count - 1; i++)
         for (var j = i + 1; j < rectangles.Count; j++)
             rectangles[i].IntersectsWith(rectangles[j]).Should().BeFalse();
     }
@@ -68,47 +86,36 @@ public class CircularCloudLayouterTests
     [Repeat(3)]
     public void PutNextRectangle_ShouldGenerateDenseLayout()
     {
-        var rectangles = new List<SKRect>();
-        float totalRectArea = 0;
-        var random = new Random();
-        for (var i = 0; i < 100; i++)
-        {
-            var size = new SKSize(random.Next(10, 100), random.Next(10, 100));
-            var rect = layouter.PutNextRectangle(size);
-            rectangles.Add(rect);
-            totalRectArea += size.Width * size.Height;
-        }
-
+        
+        var sizes = GetRandomSizes(150);
+        var rectangles = sizes.Select(size => layouter.PutNextRectangle(size)).ToArray();
+        var totalRectArea = rectangles.Sum(rect => rect.Width * rect.Height);
         var boundingCircleRadius = rectangles.Max(DistanceToCenter);
-        var boundingCircleArea = Math.PI * Math.Pow(boundingCircleRadius, 2);
-
+        var boundingCircleArea = Math.PI * boundingCircleRadius * boundingCircleRadius;
         var density = totalRectArea / boundingCircleArea;
-        density.Should().BeGreaterOrEqualTo(0.7f);
+        density.Should().BeGreaterOrEqualTo(Density);
     }
 
     [Test]
     [Repeat(3)]
     public void PutNextRectangle_ShouldPlaceRectanglesInCircle()
     {
-        var rectangles = new List<SKRect>();
-        var random = new Random();
-        for (var i = 0; i < 100; i++)
-        {
-            var size = new SKSize(random.Next(10, 100), random.Next(10, 100));
-            var rect = layouter.PutNextRectangle(size);
-            rectangles.Add(rect);
-        }
+        var sizes = GetRandomSizes(150);
+        var rectangles = sizes.Select(size => layouter.PutNextRectangle(size)).ToArray();
 
-        var maxDistanceFromCenter = rectangles.Max(DistanceToCenter);
-        const int expectedMaxDistance = 500;
 
-        maxDistanceFromCenter.Should().BeLessOrEqualTo(expectedMaxDistance);
+        var presumedAverageSide = rectangles.Average(size => (size.Width + size.Height) / 2);
+        var totalAreaOfRectangles = rectangles.Sum(rect => rect.Width * rect.Height);
+        var circleRadius = Math.Sqrt(totalAreaOfRectangles / Density / Math.PI);
+        var expectedMaxDistanceFromCenter = circleRadius + presumedAverageSide / 2;
+        var maxDistanceFromCenter = (double)rectangles.Max(DistanceToCenter);
+
+        maxDistanceFromCenter.Should().BeLessOrEqualTo(expectedMaxDistanceFromCenter);
     }
 
     private static float DistanceToCenter(SKRect rect)
     {
-        var center = new SKPoint(500, 500);
         var rectCenter = new SKPoint(rect.MidX, rect.MidY);
-        return SKPoint.Distance(center, rectCenter);
+        return SKPoint.Distance(Center, rectCenter);
     }
 }

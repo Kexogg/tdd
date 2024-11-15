@@ -2,9 +2,17 @@ using SkiaSharp;
 
 namespace TagsCloudVisualization.PositionGenerator;
 
-public class SpiralLayoutPositionGenerator(SKPoint center, double step = 0.01) : IPositionGenerator
+public class SpiralLayoutPositionGenerator : IPositionGenerator
 {
     private double angle;
+    private readonly SKPoint center;
+    private readonly double step;
+
+    public SpiralLayoutPositionGenerator(SKPoint center, double step = 0.01)
+    {
+        this.center = center;
+        this.step = step;
+    }
 
     public SKPoint GetNextPosition()
     {

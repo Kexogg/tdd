@@ -17,32 +17,33 @@ public class Renderer : IRenderer
             TextSize = 24
         };
         using var canvas = new SKCanvas(bitmap);
-        {
-            canvas.Clear(SKColors.LightGray);
-        }
+        canvas.Clear(SKColors.LightGray);
     }
 
-    public void CreateRectangles(SKRect[] rectangles)
+    public void DrawRectangles(IEnumerable<SKRect> rectangles)
     {
         using var canvas = new SKCanvas(bitmap);
         foreach (var rectangle in rectangles)
         {
-            if (rectangle.Left < 0 || rectangle.Top < 0 || rectangle.Right > bitmap.Width ||
-                rectangle.Bottom > bitmap.Height)
-                throw new ArgumentException("Rectangle is out of bounds");
-            if (rectangle.Left >= rectangle.Right || rectangle.Top >= rectangle.Bottom)
-                throw new ArgumentException("Rectangle is invalid");
+            ValidateRectangle(rectangle);
             canvas.DrawRect(rectangle, paint);
             paint.Color = new SKColor((byte)(paint.Color.Red + 21), (byte)(paint.Color.Green + 43),
                 (byte)(paint.Color.Blue + 67));
         }
     }
 
-    public void CreateImage(string path)
+    public void ValidateRectangle(SKRect rectangle)
+    {
+        if (rectangle.Left < 0 || rectangle.Top < 0 || rectangle.Right > bitmap.Width ||
+            rectangle.Bottom > bitmap.Height)
+            throw new ArgumentException("Rectangle is out of bounds");
+        if (rectangle.Left >= rectangle.Right || rectangle.Top >= rectangle.Bottom)
+            throw new ArgumentException("Rectangle is invalid");
+    }
+
+    public SKData GetEncodedImage()
     {
         using var image = SKImage.FromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        using var stream = File.OpenWrite(path);
-        data.SaveTo(stream);
+        return image.Encode(SKEncodedImageFormat.Png, 100);
     }
 }

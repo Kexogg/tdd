@@ -4,5 +4,5 @@ namespace TagsCloudVisualization.PositionGenerator;
 
 public interface IPositionGenerator
 {
-    public SKPoint GetNextPosition();
+    SKPoint GetNextPosition();
 }

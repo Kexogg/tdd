@@ -8,10 +8,10 @@ public class CircularCloudLayouter : ICircularCloudLayouter
     private readonly IPositionGenerator positionGenerator;
     private readonly List<SKRect> rectangles;
 
-    public CircularCloudLayouter(SKPoint center)
+    public CircularCloudLayouter(IPositionGenerator positionGenerator)
     {
-        rectangles = [];
-        positionGenerator = new SpiralLayoutPositionGenerator(center);
+        rectangles = new List<SKRect>();
+        this.positionGenerator = positionGenerator;
     }
 
     public SKRect PutNextRectangle(SKSize rectangleSize)
