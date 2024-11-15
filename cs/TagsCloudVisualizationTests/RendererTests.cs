@@ -7,7 +7,8 @@ namespace TagsCloudVisualizationTests;
 public class RendererTests
 {
     private const string DefaultFileName = "image.png";
-    
+    private Renderer renderer;
+
     [SetUp]
     public void SetUp()
     {
@@ -37,7 +38,6 @@ public class RendererTests
         Console.WriteLine($"Attempted to save result to file {path}");
     }
 
-    private Renderer renderer;
 
     [Test]
     public void CreateImage_ShouldCreateImage()
@@ -53,8 +53,8 @@ public class RendererTests
     [TestCase(-1, 50)]
     public void CreateRectangles_ShouldThrowException_WhenRectanglesAreOutOfBounds(int topLeft, int bottomRight)
     {
-        var renderer = () => this.renderer.DrawRectangles([new SKRect(topLeft, topLeft, bottomRight, bottomRight)]);
-        renderer.Should().ThrowExactly<ArgumentException>();
+        var action = () => renderer.DrawRectangles([new SKRect(topLeft, topLeft, bottomRight, bottomRight)]);
+        action.Should().ThrowExactly<ArgumentException>();
     }
 
     [TestCase(0, 0, 0, 0)]

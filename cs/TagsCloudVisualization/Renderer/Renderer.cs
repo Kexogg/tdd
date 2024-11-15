@@ -32,7 +32,7 @@ public class Renderer : IRenderer
         }
     }
 
-    public void ValidateRectangle(SKRect rectangle)
+    private void ValidateRectangle(SKRect rectangle)
     {
         if (rectangle.Left < 0 || rectangle.Top < 0 || rectangle.Right > bitmap.Width ||
             rectangle.Bottom > bitmap.Height)
