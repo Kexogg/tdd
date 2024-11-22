@@ -1,6 +1,5 @@
 ﻿using SkiaSharp;
 using TagsCloudVisualization.Layouter;
-using TagsCloudVisualization.PositionGenerator;
 using TagsCloudVisualization.Renderer;
 
 internal class Program
@@ -16,8 +15,7 @@ internal class Program
 
     private static SKRect[] GenerateRandomCloud(int count)
     {
-        var positionGenerator = new SpiralLayoutPositionGenerator(new SKPoint(500, 500));
-        var layouter = new CircularCloudLayouter(positionGenerator);
+        var layouter = new CircularCloudLayouter(new SKPoint(500, 500));
         var rectangleSizes = Enumerable.Range(0, count)
             .Select(_ => new SKSize(new Random().Next(10, 100), new Random().Next(10, 100)));
         return rectangleSizes.Select(layouter.PutNextRectangle).ToArray();

@@ -1,18 +1,19 @@
 using SkiaSharp;
-using TagsCloudVisualization.PositionGenerator;
 
-namespace TagsCloudVisualization.Layouter;
-
-public class CircularCloudLayouter : ICircularCloudLayouter
+namespace TagsCloudVisualization.Layouter
 {
-    private readonly IPositionGenerator positionGenerator;
-    private readonly List<SKRect> rectangles;
-
-    public CircularCloudLayouter(IPositionGenerator positionGenerator)
+    public class CircularCloudLayouter : ICircularCloudLayouter
     {
-        rectangles = new List<SKRect>();
-        this.positionGenerator = positionGenerator;
-    }
+        private readonly List<SKRect> rectangles;
+        private readonly SKPoint center;
+        private double angle;
+        private const double Step = 0.1;
+
+        public CircularCloudLayouter(SKPoint center)
+        {
+            rectangles = new List<SKRect>();
+            this.center = center;
+        }
 
     public SKRect PutNextRectangle(SKSize rectangleSize)
     {
@@ -23,7 +24,7 @@ public class CircularCloudLayouter : ICircularCloudLayouter
 
         do
         {
-            var centerOfRectangle = positionGenerator.GetNextPosition();
+            var centerOfRectangle = GetNextPosition();
             var rectanglePosition = new SKPoint(centerOfRectangle.X - rectangleSize.Width / 2,
                 centerOfRectangle.Y - rectangleSize.Height / 2);
             rectangle = new SKRect(
@@ -33,12 +34,24 @@ public class CircularCloudLayouter : ICircularCloudLayouter
                 rectanglePosition.Y + rectangleSize.Height);
         } while (rectangles.Any(r => r.IntersectsWith(rectangle)));
 
-        rectangles.Add(rectangle);
-        return rectangle;
-    }
+            rectangles.Add(rectangle);
+            return rectangle;
+        }
 
-    public SKRect[] GetRectangles()
-    {
-        return rectangles.ToArray();
+        public SKRect[] GetRectangles()
+        {
+            return rectangles.ToArray();
+        }
+
+        private SKPoint GetNextPosition()
+        {
+            var radius = Step * angle;
+            var x = (float)(center.X + radius * Math.Cos(angle));
+            var y = (float)(center.Y + radius * Math.Sin(angle));
+
+            angle += Step;
+
+            return new SKPoint(x, y);
+        }
     }
 }

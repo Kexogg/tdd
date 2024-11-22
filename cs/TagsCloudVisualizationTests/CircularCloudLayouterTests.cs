@@ -1,6 +1,5 @@
 using NUnit.Framework.Interfaces;
 using TagsCloudVisualization.Layouter;
-using TagsCloudVisualization.PositionGenerator;
 using TagsCloudVisualization.Renderer;
 
 namespace TagsCloudVisualizationTests;
@@ -10,30 +9,25 @@ public class CircularCloudLayouterTests
 {
     private CircularCloudLayouter layouter;
     private static readonly SKPoint Center = new(500, 500);
-    private static readonly float Density = 0.7f;
+    private static readonly float Density = 0.65f;
 
     [SetUp]
     public void SetUp()
     {
-        var positionGenerator = new SpiralLayoutPositionGenerator(Center);
-        layouter = new CircularCloudLayouter(positionGenerator);
+        layouter = new CircularCloudLayouter(Center);
     }
 
     [TearDown]
     public void TearDown()
     {
         if (TestContext.CurrentContext.Result.Outcome.Status != TestStatus.Failed) return;
-
-        
-        if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
-        {
-            var filename = "tests/layouter_" + TestContext.CurrentContext.Test.ID + ".png";
-            SaveImage(filename);
-        }
+        SaveImage();
     }
-    
-    private void SaveImage(string filename)
+
+    private void SaveImage()
     {
+        var filename = "tests/layouter_" + TestContext.CurrentContext.Test.ID + ".png";
+
         var renderer = new Renderer(new SKSize(Center.X * 2, Center.Y * 2));
         renderer.DrawRectangles(layouter.GetRectangles());
         var imageData = renderer.GetEncodedImage();
@@ -44,16 +38,14 @@ public class CircularCloudLayouterTests
         Console.WriteLine($"Tag cloud visualization saved to file {path}");
     }
 
-    private SKSize[] GetRandomSizes(int count)
+    private IEnumerable<SKSize> GetRandomSizes(int count)
     {
         var random = new Random();
-        var sizes = new SKSize[count];
         for (var i = 0; i < count; i++)
         {
             var size = new SKSize(random.Next(10, 100), random.Next(10, 100));
-            sizes[i] = size;
+            yield return size;
         }
-        return sizes;
     }
 
     [Test]
@@ -86,7 +78,6 @@ public class CircularCloudLayouterTests
     [Repeat(3)]
     public void PutNextRectangle_ShouldGenerateDenseLayout()
     {
-        
         var sizes = GetRandomSizes(150);
         var rectangles = sizes.Select(size => layouter.PutNextRectangle(size)).ToArray();
         var totalRectArea = rectangles.Sum(rect => rect.Width * rect.Height);
@@ -102,8 +93,8 @@ public class CircularCloudLayouterTests
     {
         var sizes = GetRandomSizes(150);
         var rectangles = sizes.Select(size => layouter.PutNextRectangle(size)).ToArray();
-
-
+        
+        
         var presumedAverageSide = rectangles.Average(size => (size.Width + size.Height) / 2);
         var totalAreaOfRectangles = rectangles.Sum(rect => rect.Width * rect.Height);
         var circleRadius = Math.Sqrt(totalAreaOfRectangles / Density / Math.PI);

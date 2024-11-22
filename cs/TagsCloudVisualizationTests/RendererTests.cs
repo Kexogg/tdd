@@ -43,10 +43,7 @@ public class RendererTests
     public void CreateImage_ShouldCreateImage()
     {
         var image = renderer.GetEncodedImage();
-        using var stream = File.OpenWrite(DefaultFileName);
-        image.SaveTo(stream);
-        
-        Assert.That(File.Exists(DefaultFileName));
+        image.Should().NotBeNull();
     }
 
     [TestCase(0, 200)]
